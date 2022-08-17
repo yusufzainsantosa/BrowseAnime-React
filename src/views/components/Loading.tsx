@@ -1,4 +1,4 @@
-import "./Loading.css";
+import "../../assets/css/Loading.css";
 
 function Loading() {
   return (
