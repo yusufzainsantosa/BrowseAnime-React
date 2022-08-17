@@ -5,17 +5,16 @@ import { useQuery } from "@apollo/client";
 import { Box, Grid, Pagination, Stack } from "@mui/material";
 
 import { GET_ANIME_LIST } from "../../services/Query";
-import { AnimeInfo, PageInfo } from "../../interfaces/Type";
+import { CollectionData, LocalStorageWorker } from "../../services/Storage";
+import { AnimeInfo, PageInfo, QueryResponse } from "../../interfaces/Type";
+import ModalCollection from "../components/ModalCollection";
 import CardAnime from "../components/CardAnime";
 
 interface DataResponse {
   pageInfo: PageInfo;
   media: AnimeInfo[];
 }
-interface QueryResponse {
-  loading: boolean;
-  error?: any;
-  refetch?: any;
+interface Response extends QueryResponse {
   data:
     | {
         Page: DataResponse;
@@ -23,17 +22,27 @@ interface QueryResponse {
     | undefined;
 }
 
+const TitleEl = styled.div({
+  fontSize: "35px",
+  fontWeight: "600",
+  margin: "10px 0 30px 0",
+  "& > span:nth-of-type(1)": {
+    color: "#b50e0e",
+  },
+  "& > span:nth-of-type(2)": {
+    color: "white",
+  },
+});
 const Container = styled.div({
   minHeight: "calc(100% - 50px)",
   position: "relative",
   paddingBottom: "50px",
 });
 const MediaContainer = styled.div({
-  maxWidth: "1000px",
+  maxWidth: "1200px",
   margin: "0 auto",
   padding: "20px 30px",
 });
-
 const PaginationEl = styled.div({
   padding: "5px 0 10px 0",
   position: "absolute",
@@ -47,12 +56,15 @@ const PaginationEl = styled.div({
     color: "white",
   },
 });
+
 const GridStyle = {
-  padding: "8px",
+  paddingRight: "20px",
 };
 
 function Browse() {
-  const updateLoadingState = useOutletContext<any>();
+  const storage = new LocalStorageWorker();
+  const [updateLoadingState, updateErrorState] = useOutletContext<any[]>();
+  const [modalOpen, updateModalOpen] = useState<boolean>(false);
   const [pageDetail, updatePageDetail] = useState<PageInfo>({
     total: 1,
     perPage: 1,
@@ -60,18 +72,23 @@ function Browse() {
     lastPage: 1,
     hasNextPage: false,
   });
+  const [animeCollected, updateAnimeCollected] = useState<CollectionData[]>();
   const [animeList, updateAnimeList] = useState<AnimeInfo[]>();
+  const [animeSelect, updateAnimeSelect] = useState<AnimeInfo>();
   const queryParams = {
     page: 1,
     perPage: 10,
-    sort: ["END_DATE_DESC"],
+    type: "ANIME",
+    sort: ["TRENDING_DESC", "POPULARITY_DESC"],
   };
 
-  const { loading, data, refetch }: QueryResponse = useQuery(GET_ANIME_LIST, {
+  const { loading, data, error, refetch }: Response = useQuery(GET_ANIME_LIST, {
     variables: queryParams,
     notifyOnNetworkStatusChange: true,
   });
 
+  const getAllCollectionsValues = (): void =>
+    updateAnimeCollected(storage.getAllValues());
   const updatePagination = (page: number): void => {
     if (page > pageDetail.currentPage && !pageDetail.hasNextPage) return;
     refetch({
@@ -79,10 +96,24 @@ function Browse() {
       page,
     });
   };
+  const isAnimeCollected = (id: number) => {
+    if (animeCollected)
+      return Boolean(animeCollected.find((data) => data.id === id));
+    return false;
+  };
+  const whenModalOpen = (state: boolean, data: AnimeInfo): void => {
+    updateModalOpen(state);
+    updateAnimeSelect(data);
+  };
+  const whenModalClosed = (state: boolean): void => {
+    getAllCollectionsValues();
+    updateModalOpen(state);
+  };
 
   useEffect(() => {
-    updateLoadingState(loading)
-    if (data) {
+    getAllCollectionsValues();
+    updateLoadingState(loading);
+    if (!loading && data) {
       const { media, pageInfo } = data.Page;
       if (media.length > 0) {
         updateAnimeList(media);
@@ -93,31 +124,34 @@ function Browse() {
           page: pageDetail.currentPage,
         });
     }
+    if (!loading && error) updateErrorState(true);
     // eslint-disable-next-line
-  }, [loading, data]);
+  }, [loading, data, error]);
 
   return (
     <Container>
       <MediaContainer>
+        <TitleEl>
+          <span>|</span>&nbsp;
+          <span>Trending</span>
+        </TitleEl>
         <Box sx={{ flexGrow: 1 }}>
-          <Grid container>
+          <Grid container columns={30}>
             {animeList
-              ? animeList.map((media, index) => (
+              ? animeList.map((media: AnimeInfo, index) => (
                   <Grid
                     key={`grid_${index}`}
                     item
-                    xs={12}
-                    sm={4}
-                    md={3}
-                    lg={3}
+                    xs={30}
+                    sm={15}
+                    md={10}
+                    lg={6}
                     sx={GridStyle}
                   >
                     <CardAnime
-                      key={`card_${index}`}
-                      imgUrl={media.coverImage.large}
-                      color={media.coverImage.color}
-                      title={media.title.userPreferred}
-                      genres={media.genres}
+                      animeData={media}
+                      collectionClick={whenModalOpen}
+                      isCollected={isAnimeCollected(media.id)}
                     />
                   </Grid>
                 ))
@@ -125,14 +159,17 @@ function Browse() {
           </Grid>
         </Box>
       </MediaContainer>
+      <ModalCollection
+        state={modalOpen}
+        closedModal={whenModalClosed}
+        collectionData={animeSelect}
+      />
       <PaginationEl>
         <Stack spacing={2}>
           <Pagination
-            count={pageDetail.total}
+            count={pageDetail.lastPage}
             page={pageDetail.currentPage}
             onChange={(event, page) => updatePagination(page)}
-            showFirstButton
-            showLastButton
           />
         </Stack>
       </PaginationEl>
