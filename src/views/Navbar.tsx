@@ -1,4 +1,4 @@
-import { Link } from "@mui/material";
+import { Link } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
@@ -11,7 +11,8 @@ const Nav = styled.nav({
 });
 const NavLink = css({
   textAlign: "center",
-  padding: "20px",
+  padding: "22px",
+  lineHeight: "18px",
   cursor: "pointer",
   color: "white",
   textDecoration: "none",
@@ -30,8 +31,8 @@ function Navbar() {
   return (
     <Nav>
       <NavMenu>
-        <Link>Browse</Link>
-        <Link>My Collections</Link>
+        <Link to="/">Browse</Link>
+        <Link to="/collections">My Collections</Link>
       </NavMenu>
     </Nav>
   );
