@@ -4,11 +4,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import "./index.css";
 import App from "./App";
+import Error from "./views/pages/Error";
 import Browse from "./views/pages/Browse";
+import Collections from "./views/pages/Collections";
+import DetailAnime from "./views/pages/DetailAnime";
+import DetailCollection from "./views/pages/DetailCollection";
 import reportWebVitals from "./reportWebVitals";
 
 const client = new ApolloClient({
-  uri: 'https://graphql.anilist.co',
+  uri: "https://graphql.anilist.co",
   cache: new InMemoryCache(),
 });
 
@@ -23,16 +27,14 @@ root.render(
         <Routes>
           <Route path="/" element={<App />}>
             <Route path="" element={<Browse />} />
+            <Route path="anime" element={<DetailAnime />}>
+              <Route path=":mediaId" element={<DetailAnime />} />
+            </Route>
+            <Route path="collections" element={<Collections />} />
+            <Route path="collections/:collectionKey" element={<DetailCollection />} />
           </Route>
-          <Route
-            path="*"
-            element={
-              <main style={{ padding: "1rem" }}>
-                <p>There's nothing here!</p>
-              </main>
-            }
-          />
-        </Routes>        
+          <Route path="*" element={<Error code={404} />} />
+        </Routes>
       </ApolloProvider>
     </BrowserRouter>
   </React.StrictMode>
