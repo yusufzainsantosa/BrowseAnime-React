@@ -19,6 +19,7 @@ import Staff from "../components/Staff";
 import TabPanel from "../components/TabPanel";
 import Characters from "../components/Characters";
 import ModalCollection from "../components/ModalCollection";
+import RemoveAnimeColl from "../components/RemoveAnimeColl";
 import {
   convertCamel2Title,
   OverviewFormat,
@@ -108,10 +109,20 @@ const ImgContainer = styled.div({
     filter: "drop-shadow(2px 4px 6px black) brightness(90%)",
   },
 });
-const CardCollection = {
-  color: "gray",
+const CardCollectionSelected = {
   cursor: "pointer",
+  color: "red",
+  transition: "all 0.2s",
   "&:hover": {
+    fontSize: "30px",
+  },
+};
+const CardCollection = {
+  color: "#ececec",
+  cursor: "pointer",
+  transition: "all 0.2s",
+  "&:hover": {
+    fontSize: "30px",
     color: "red",
   },
 };
@@ -127,6 +138,7 @@ function DetailAnime() {
   };
   const [updateLoadingState, updateErrorState] = useOutletContext<any[]>();
   const [modalOpen, updateModalOpen] = useState<boolean>(false);
+  const [deleteOpen, updateDeleteOpen] = useState<boolean>(false);
   const [animeDetail, updateAnimeDetail] = useState<AnimeDetail>();
   const [animeCollected, updateAnimeCollected] = useState<CollectionData[]>();
   const [animeCharacters, updateAnimeCharacters] = useState<CharacterPreview>();
@@ -146,6 +158,12 @@ function DetailAnime() {
   const whenModalClosed = (state: boolean): void => {
     getAllCollectionsValues();
     updateModalOpen(state);
+  };
+  const animeRemovedStatus = (state: boolean): void => {
+    if (state) {
+      getAllCollectionsValues();
+    }
+    updateDeleteOpen(false);
   };
   const isAnimeCollected = (id: number) => {
     if (animeCollected)
@@ -260,7 +278,10 @@ function DetailAnime() {
             <MediaContent>
               <div className="anime-title">
                 {isAnimeCollected(animeDetail.id) ? (
-                  <TurnedInIcon sx={{ color: "red" }} />
+                  <TurnedInIcon
+                    sx={CardCollectionSelected}
+                    onClick={() => updateDeleteOpen(true)}
+                  />
                 ) : (
                   <TurnedInNotIcon
                     sx={CardCollection}
@@ -278,6 +299,11 @@ function DetailAnime() {
               state={modalOpen}
               closedModal={whenModalClosed}
               collectionData={animeDetail}
+            />
+            <RemoveAnimeColl
+              data={animeDetail}
+              state={deleteOpen}
+              deleteState={(state) => animeRemovedStatus(state)}
             />
           </MediaDetail>
           <MediaOverview>
