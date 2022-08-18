@@ -43,7 +43,7 @@ const CardTag = styled.div({
   padding: "2px 10px",
   color: "white",
   position: "absolute",
-  left: "5px",
+  right: "5px",
   top: "5px",
   width: "fit-content",
   borderRadius: "6px",
@@ -65,9 +65,10 @@ const CardAnimeEl = {
 const CardCollection = {
   position: "absolute",
   top: "3px",
-  right: "3px",
+  left: "3px",
   color: "#ececec",
   transition: "all 0.2s",
+  zIndex: 9,
   "&:hover": {
     fontSize: "30px",
     color: "red",
@@ -76,9 +77,10 @@ const CardCollection = {
 const CardCollectionSelected = {
   position: "absolute",
   top: "3px",
-  right: "3px",
+  left: "3px",
   color: "red",
   transition: "all 0.2s",
+  zIndex: 9,
   "&:hover": {
     fontSize: "30px",
   },
@@ -143,10 +145,25 @@ function CardAnime({
         className="anime-card"
         sx={{
           ...CardContainer,
-          maxWidth: breakpoint === "mobile" ? "150px" : "250px",
-          maxHeight: breakpoint === "mobile" ? "200px" : "300px",
+          maxWidth: breakpoint === "mobile" ? "200px" : "250px",
+          maxHeight: breakpoint === "mobile" ? "250px" : "300px",
         }}
       >
+        {isCollected ? (
+          <TurnedInIcon
+            sx={CardCollectionSelected}
+            onClick={() => collectionClick(false, animeData)}
+            onMouseOver={() => updateCollectionHover(true)}
+            onMouseOut={() => updateCollectionHover(false)}
+          />
+        ) : (
+          <TurnedInNotIcon
+            sx={CardCollection}
+            onClick={() => collectionClick(true, animeData)}
+            onMouseOver={() => updateCollectionHover(true)}
+            onMouseOut={() => updateCollectionHover(false)}
+          />
+        )}
         <Link
           style={{
             textDecoration: "none",
@@ -165,21 +182,6 @@ function CardAnime({
             sx={CardAnimeEl}
           />
           {format ? <CardTag>{format}</CardTag> : ""}
-          {isCollected ? (
-            <TurnedInIcon
-              sx={CardCollectionSelected}
-              onClick={() => collectionClick(false, animeData)}
-              onMouseOver={() => updateCollectionHover(true)}
-              onMouseOut={() => updateCollectionHover(false)}
-            />
-          ) : (
-            <TurnedInNotIcon
-              sx={CardCollection}
-              onClick={() => collectionClick(true, animeData)}
-              onMouseOver={() => updateCollectionHover(true)}
-              onMouseOut={() => updateCollectionHover(false)}
-            />
-          )}
           <CardContent className="description" sx={CardAnimeDesc}>
             <p>{title.userPreferred}</p>
             <div className="format-eps">
