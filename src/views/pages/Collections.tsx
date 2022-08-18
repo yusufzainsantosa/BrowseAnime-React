@@ -145,7 +145,11 @@ function Collections() {
                     sx={TrashIcon}
                   />
                   <Collection key={`collection_${index}`}>
-                    <Folder key={`folder_${index}`} collection={item.key} files={item.value}></Folder>
+                    <Folder
+                      key={`folder_${index}`}
+                      collection={item.key}
+                      files={item.value}
+                    ></Folder>
                   </Collection>
                   <p className="collection-title">{item.key}</p>
                 </FolderContainer>
@@ -165,7 +169,12 @@ function Collections() {
         }}
       >
         <DialogContent>
-          <p>Are you sure you want to delete this collection</p>
+          <p>
+            Are you sure you want to delete this collection &nbsp;
+            <span style={{ color: "#d43535", fontWeight: 600 }}>
+              {deleteNotif.collection}
+            </span>
+          </p>
         </DialogContent>
         <DialogActions>
           <Button onClick={cancelDelete} variant="outlined">
