@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
+import useBreakpoint from "use-breakpoint";
 import { Link, useOutletContext, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { Chip, Box, Tabs, Tab } from "@mui/material";
+import { Box, Chip, Tabs, Tab } from "@mui/material";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 
@@ -13,10 +14,9 @@ import {
 } from "../../services/Storage";
 import { GET_ANIME_OVERVIEW } from "../../services/Query";
 import {
-  AnimeCharacters,
   AnimeDetail,
-  AnimeStaff,
-  PageInfo,
+  CharacterPreview,
+  StaffPreview,
   QueryResponse,
 } from "../../interfaces/Type";
 import Staff from "../components/Staff";
@@ -24,20 +24,8 @@ import TabPanel from "../components/TabPanel";
 import Characters from "../components/Characters";
 import ModalCollection from "../components/ModalCollection";
 import RemoveAnimeColl from "../components/RemoveAnimeColl";
-import {
-  convertCamel2Title,
-  OverviewFormat,
-  OverviewList,
-} from "../../services/Overview";
+import OverviewDetail from "../components/OverviewDetail";
 
-interface CharacterPreview {
-  pageInfo: PageInfo;
-  edges: AnimeCharacters[];
-}
-interface StaffPreview {
-  pageInfo: PageInfo;
-  edges: AnimeStaff[];
-}
 interface AnimeOverview extends AnimeDetail {
   characterPreview: CharacterPreview;
   staffPreview: StaffPreview;
@@ -54,7 +42,7 @@ type UrlParams = {
 };
 
 const BannerContainer = styled.div({
-  backgroundPosition: "center",
+  backgroundPosition: "center !important",
   height: "300px",
   "& > img": {
     height: "100%",
@@ -65,10 +53,6 @@ const BannerContainer = styled.div({
 const MediaDetail = styled.div({
   display: "flex",
   padding: "0 0 40px 0",
-});
-const OverlayEl = styled.div({
-  display: "flex",
-  flexDirection: "column",
 });
 const MediaOverview = styled.div({
   display: "flex",
@@ -144,7 +128,10 @@ const CardCollection = {
   },
 };
 
+const breakpoints = { mobile: 0, nonMobile: 900 };
+
 function DetailAnime() {
+  const { breakpoint } = useBreakpoint(breakpoints, "mobile", false);
   const storage = new LocalStorageWorker();
   const params = useParams<UrlParams>();
   const paramsQuery = {
@@ -160,6 +147,7 @@ function DetailAnime() {
   const [animeCollected, updateAnimeCollected] = useState<CollectionData[]>();
   const [animeCharacters, updateAnimeCharacters] = useState<CharacterPreview>();
   const [animeStaff, updateAnimeStaff] = useState<StaffPreview>();
+  const [animeInitData, updateAnimeInitData] = useState<AnimeOverview>();
   const [collByAnimeId, UpdateCollByAnimeId] = useState<CollectionByAnimeId>();
   const [tabValue, updateTabValue] = useState<number>(0);
 
@@ -203,6 +191,7 @@ function DetailAnime() {
       return `linear-gradient(transparent, rgb(42 51 78) 100.2%), url(${urlMedia})`;
     return "linear-gradient(45deg, rgb(45 101 138) 0%, rgb(0 0 0 / 33%) 80%)";
   };
+
   const changeTab = (event: React.SyntheticEvent, tab: number): void =>
     updateTabValue(tab);
   const tabDetailInfo = ({
@@ -221,10 +210,20 @@ function DetailAnime() {
         }}
       >
         <Tabs value={tabValue} onChange={changeTab} centered>
+          {breakpoint === "mobile" ? <Tab label="Detail" /> : ""}
           <Tab label="Characters" />
           <Tab label="Staff" />
         </Tabs>
-        <TabPanel value={tabValue} index={0}>
+        {breakpoint === "mobile" ? (
+          <TabPanel value={tabValue} index={0}>
+            <div style={{ padding: "20px" }}>
+              {animeDetail ? <OverviewDetail animeDetail={animeDetail} /> : ""}
+            </div>
+          </TabPanel>
+        ) : (
+          ""
+        )}
+        <TabPanel value={tabValue} index={breakpoint === "mobile" ? 1 : 0}>
           <Characters
             characters={characters.edges}
             page={characters.pageInfo}
@@ -233,7 +232,7 @@ function DetailAnime() {
             }
           />
         </TabPanel>
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value={tabValue} index={breakpoint === "mobile" ? 2 : 1}>
           <Staff
             staff={staff.edges}
             page={staff.pageInfo}
@@ -265,6 +264,13 @@ function DetailAnime() {
     updateLoadingState(loading);
     if (!loading && data) {
       const { characterPreview, staffPreview, ...mediaDetail } = data.Media;
+      if (
+        characterPreview &&
+        staffPreview &&
+        characterPreview?.pageInfo.currentPage === 1 &&
+        staffPreview?.pageInfo.currentPage === 1
+      )
+        updateAnimeInitData(data.Media);
       updateAnimeDetail(mediaDetail);
       updateAnimeCharacters((prevState: undefined | CharacterPreview) => ({
         pageInfo: characterPreview.pageInfo,
@@ -288,6 +294,32 @@ function DetailAnime() {
     getAllCollectionsValues();
     // eslint-disable-next-line
   }, [animeDetail]);
+  useEffect(() => {
+    if (breakpoint === "mobile") updateTabValue((prevState) => prevState + 1);
+    else updateTabValue((prevState) => (prevState !== 0 ? prevState - 1 : 0));
+    // eslint-disable-next-line
+  }, [breakpoint]);
+  useEffect(() => {
+    if (
+      animeInitData &&
+      animeCharacters &&
+      animeStaff &&
+      (animeCharacters?.pageInfo.currentPage > 1 ||
+        animeStaff?.pageInfo.currentPage > 1)
+    ) {
+      const { characterPreview, staffPreview } = animeInitData;
+
+      updateAnimeCharacters((prevState: undefined | CharacterPreview) => ({
+        pageInfo: characterPreview.pageInfo,
+        edges: characterPreview.edges,
+      }));
+      updateAnimeStaff((prevState: undefined | StaffPreview) => ({
+        pageInfo: staffPreview.pageInfo,
+        edges: staffPreview.edges,
+      }));
+    }
+    // eslint-disable-next-line
+  }, [tabValue]);
 
   return (
     <div>
@@ -297,17 +329,22 @@ function DetailAnime() {
             className="test"
             style={{
               background: backgroundGradientColor(animeDetail.bannerImage),
-              backgroundPosition: "center",
             }}
           />
           <MediaDetail>
-            <ImgContainer>
-              <img
-                src={animeDetail.coverImage.large}
-                alt={animeDetail.title.userPreferred.replace(/\s/g, "-")}
-              />
-            </ImgContainer>
-            <MediaContent>
+            {breakpoint !== "mobile" ? (
+              <ImgContainer>
+                <img
+                  src={animeDetail.coverImage.large}
+                  alt={animeDetail.title.userPreferred.replace(/\s/g, "-")}
+                />
+              </ImgContainer>
+            ) : (
+              ""
+            )}
+            <MediaContent
+              style={breakpoint === "mobile" ? { paddingLeft: "20px" } : {}}
+            >
               <div className="anime-title">
                 {isAnimeCollected(animeDetail.id) ? (
                   <TurnedInIcon
@@ -363,26 +400,17 @@ function DetailAnime() {
             />
           </MediaDetail>
           <MediaOverview>
-            <div className="overview">
-              {animeDetail
-                ? Object.entries(animeDetail).map(([keyValue, value], index) =>
-                    OverviewList.includes(keyValue) ? (
-                      <div key={`overview-${index}`}>
-                        <p>{convertCamel2Title(keyValue)}</p>
-                        <OverlayEl key={`overview-data-${index}`}>
-                          {value ? (
-                            OverviewFormat(keyValue, value)
-                          ) : (
-                            <span>-</span>
-                          )}
-                        </OverlayEl>
-                      </div>
-                    ) : (
-                      ""
-                    )
-                  )
-                : ""}
-            </div>
+            {breakpoint !== "mobile" ? (
+              <div className="overview">
+                {animeDetail ? (
+                  <OverviewDetail animeDetail={animeDetail} />
+                ) : (
+                  ""
+                )}
+              </div>
+            ) : (
+              ""
+            )}
             {animeCharacters && animeStaff
               ? tabDetailInfo({
                   characters: animeCharacters,
