@@ -11,16 +11,16 @@ const Container = styled.div({
   color: "white",
   height: "100%",
   fontSize: "14px",
-  "&:hover": {
+  "& .anime-card": {
+    cursor: "pointer",
+  },
+  "& .anime-card:hover": {
     ".img-card": {
       maxHeight: "320px",
       filter: "brightness(55%)",
     },
     ".description": {
       visibility: "visible",
-    },
-    ".title-element": {
-      visibility: "hidden",
     },
   },
 });
@@ -65,8 +65,10 @@ const CardCollection = {
   position: "absolute",
   top: "3px",
   right: "3px",
-  color: "gray",
+  color: "#ececec",
+  transition: "all 0.2s",
   "&:hover": {
+    fontSize: "30px",
     color: "red",
   },
 };
@@ -75,6 +77,10 @@ const CardCollectionSelected = {
   top: "3px",
   right: "3px",
   color: "red",
+  transition: "all 0.2s",
+  "&:hover": {
+    fontSize: "30px",
+  },
 };
 const CardAnimeDesc = {
   position: "absolute",
@@ -82,7 +88,7 @@ const CardAnimeDesc = {
   left: 0,
   color: "white",
   backgroundColor: "#00000057",
-  width: "inherit",
+  width: "100%",
   visibility: "hidden",
   padding: "5px 0",
   "& p": {
@@ -99,7 +105,6 @@ const CardAnimeDesc = {
 const CardContainer = {
   position: "relative",
   borderRadius: "10px",
-  cursor: "pointer",
   background:
     "linear-gradient(112.1deg, rgb(32, 38, 57) 11.4%, rgb(63, 76, 119) 70.2%)",
 };
@@ -126,14 +131,14 @@ function CardAnime({
   }, [title, genres]);
 
   return (
-    <Link
-      style={{
-        textDecoration: "none",
-      }}
-      to={collectionHover ? "#" : `/anime/${id}`}
-    >
-      <Container>
-        <Card sx={[CardAnimeEl, CardContainer]}>
+    <Container>
+      <Card className="anime-card" sx={[CardAnimeEl, CardContainer]}>
+        <Link
+          style={{
+            textDecoration: "none",
+          }}
+          to={collectionHover ? "#" : `/anime/${id}`}
+        >
           <CardMedia
             className="img-card"
             component="img"
@@ -143,7 +148,12 @@ function CardAnime({
           />
           {format ? <CardTag>{format}</CardTag> : ""}
           {isCollected ? (
-            <TurnedInIcon sx={CardCollectionSelected} />
+            <TurnedInIcon
+              sx={CardCollectionSelected}
+              onClick={() => collectionClick(false, animeData)}
+              onMouseOver={() => updateCollectionHover(true)}
+              onMouseOut={() => updateCollectionHover(false)}
+            />
           ) : (
             <TurnedInNotIcon
               sx={CardCollection}
@@ -173,10 +183,10 @@ function CardAnime({
                 : ""}
             </CardAnimeGenres>
           </CardContent>
-        </Card>
-        <TitleEl className="title-element">{title.userPreferred}</TitleEl>
-      </Container>
-    </Link>
+        </Link>
+      </Card>
+      <TitleEl className="title-element">{title.userPreferred}</TitleEl>
+    </Container>
   );
 }
 
