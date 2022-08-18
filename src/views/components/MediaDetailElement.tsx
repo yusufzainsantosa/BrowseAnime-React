@@ -10,6 +10,7 @@ export const MediaDetailSection = styled.div({
   border: "2px solid black",
   ".media-detail-img": {
     width: "130px",
+    backgroundColor: "gray",
     objectFit: "cover",
     objectPosition: "center",
     height: "100%",
