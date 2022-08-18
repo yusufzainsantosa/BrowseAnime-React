@@ -82,7 +82,8 @@ function ModalCollection({
     updateAddClick(true);
     if (error === "" && !setErrorCollection(collectionName, true)) {
       const collections = collectionSelect;
-      if (collectionName) collections.push(collectionName);
+      if (collectionName && !collections.includes(collectionName))
+        collections.push(collectionName);
       if (collectionData) {
         const stringifyData = JSON.stringify(collectionData);
         storage.add(collections, stringifyData);
