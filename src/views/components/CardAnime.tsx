@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import useBreakpoint from "use-breakpoint";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardMedia, Chip } from "@mui/material";
@@ -103,11 +104,16 @@ const CardAnimeDesc = {
   },
 };
 const CardContainer = {
+  width: "100%",
+  height: "100%",
+  filter: "brightness(90%)",
   position: "relative",
   borderRadius: "10px",
   background:
     "linear-gradient(112.1deg, rgb(32, 38, 57) 11.4%, rgb(63, 76, 119) 70.2%)",
 };
+
+const breakpoints = { mobile: 0, nonMobile: 600 };
 
 function CardAnime({
   animeData,
@@ -118,6 +124,7 @@ function CardAnime({
   isCollected: boolean;
   collectionClick: (state: boolean, data: AnimeInfo) => void;
 }) {
+  const { breakpoint } = useBreakpoint(breakpoints, "mobile", false);
   const { id, coverImage, title, genres, episodes, format } = animeData;
   const [collectionHover, updateCollectionHover] = useState<boolean>(false);
   const [mediaTitle, updateMediaTitle] = useState<string>();
@@ -132,7 +139,14 @@ function CardAnime({
 
   return (
     <Container>
-      <Card className="anime-card" sx={[CardAnimeEl, CardContainer]}>
+      <Card
+        className="anime-card"
+        sx={{
+          ...CardContainer,
+          maxWidth: breakpoint === "mobile" ? "150px" : "250px",
+          maxHeight: breakpoint === "mobile" ? "200px" : "300px",
+        }}
+      >
         <Link
           style={{
             textDecoration: "none",
@@ -142,7 +156,11 @@ function CardAnime({
           <CardMedia
             className="img-card"
             component="img"
-            image={coverImage.large}
+            image={
+              breakpoint === "mobile" && coverImage.medium
+                ? coverImage.medium
+                : coverImage.large
+            }
             alt={`${mediaTitle}`}
             sx={CardAnimeEl}
           />
