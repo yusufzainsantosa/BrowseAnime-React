@@ -1,3 +1,4 @@
+import React from "react";
 import styled from "@emotion/styled";
 import { useOutletContext } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import { GET_ANIME_LIST } from "../../services/Query";
 import { CollectionData, LocalStorageWorker } from "../../services/Storage";
 import { AnimeInfo, PageInfo, QueryResponse } from "../../interfaces/Type";
 import ModalCollection from "../components/ModalCollection";
+import RemoveAnimeColl from "../components/RemoveAnimeColl";
 import CardAnime from "../components/CardAnime";
 
 interface DataResponse {
@@ -64,6 +66,7 @@ const GridStyle = {
 function Browse() {
   const storage = new LocalStorageWorker();
   const [updateLoadingState, updateErrorState] = useOutletContext<any[]>();
+  const [deleteOpen, updateDeleteOpen] = useState<boolean>(false);
   const [modalOpen, updateModalOpen] = useState<boolean>(false);
   const [pageDetail, updatePageDetail] = useState<PageInfo>({
     total: 1,
@@ -96,13 +99,20 @@ function Browse() {
       page,
     });
   };
+  const animeRemovedStatus = (state: boolean): void => {
+    if (state) {
+      getAllCollectionsValues();
+    }
+    updateDeleteOpen(false);
+  };
   const isAnimeCollected = (id: number) => {
     if (animeCollected)
       return Boolean(animeCollected.find((data) => data.id === id));
     return false;
   };
   const whenModalOpen = (state: boolean, data: AnimeInfo): void => {
-    updateModalOpen(state);
+    if (state) updateModalOpen(true);
+    else updateDeleteOpen(true);
     updateAnimeSelect(data);
   };
   const whenModalClosed = (state: boolean): void => {
@@ -159,11 +169,22 @@ function Browse() {
           </Grid>
         </Box>
       </MediaContainer>
-      <ModalCollection
-        state={modalOpen}
-        closedModal={whenModalClosed}
-        collectionData={animeSelect}
-      />
+      {animeSelect ? (
+        <React.Fragment>
+          <ModalCollection
+            state={modalOpen}
+            closedModal={whenModalClosed}
+            collectionData={animeSelect}
+          />
+          <RemoveAnimeColl
+            data={animeSelect}
+            state={deleteOpen}
+            deleteState={(state) => animeRemovedStatus(state)}
+          />
+        </React.Fragment>
+      ) : (
+        ""
+      )}
       <PaginationEl>
         <Stack spacing={2}>
           <Pagination
