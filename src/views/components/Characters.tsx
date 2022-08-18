@@ -40,21 +40,33 @@ function Characters({
                 </span>
               </MediaDetailContent>
               <MediaDetailContent style={{ alignItems: "end" }}>
-                {character.voiceActors ? (
                   <React.Fragment>
-                    <span>{character.voiceActors[0].name.userPreferred}</span>
-                    <span>{character.voiceActors[0].language}</span>
+                    {character.voiceActors.length > 0 ? (
+                      <span>{character.voiceActors[0].name.userPreferred}</span>
+                    ) : (
+                      <span>-</span>
+                    )}
+                    {character.voiceActors.length > 0 ? (
+                      <span>{character.voiceActors[0].language}</span>
+                    ) : (
+                     <span>-</span>
+                    )}
                   </React.Fragment>
-                ) : (
-                  ""
-                )}
               </MediaDetailContent>
               <div>
                 {character.voiceActors ? (
                   <img
                     className="media-detail-img"
-                    src={character.voiceActors[0].image.medium}
-                    alt={character.voiceActors[0].name.userPreferred}
+                    src={
+                      character.voiceActors.length > 0
+                        ? character.voiceActors[0].image.medium
+                        : "https://lpm.ulm.ac.id/image/desain/empty.jpg"
+                    }
+                    alt={
+                      character.voiceActors.length > 0
+                        ? character.voiceActors[0].name.userPreferred
+                        : ""
+                    }
                   />
                 ) : (
                   ""
