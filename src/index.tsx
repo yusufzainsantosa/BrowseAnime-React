@@ -25,7 +25,7 @@ root.render(
     <BrowserRouter>
       <ApolloProvider client={client}>
         <Routes>
-          <Route path="/" element={<App />}>
+          <Route path="/anime-browse" element={<App />}>
             <Route path="" element={<Browse />} />
             <Route path="anime" element={<DetailAnime />}>
               <Route path=":mediaId" element={<DetailAnime />} />

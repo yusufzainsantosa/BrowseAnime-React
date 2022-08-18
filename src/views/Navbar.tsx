@@ -31,8 +31,8 @@ function Navbar() {
   return (
     <Nav>
       <NavMenu>
-        <Link to="/">Browse</Link>
-        <Link to="/collections">My Collections</Link>
+        <Link to="/anime-browse">Browse</Link>
+        <Link to="/anime-browse/collections">My Collections</Link>
       </NavMenu>
     </Nav>
   );

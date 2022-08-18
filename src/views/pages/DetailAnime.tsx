@@ -364,7 +364,7 @@ function DetailAnime() {
                 {collByAnimeId && collByAnimeId.keys
                   ? collByAnimeId.keys.map((value, index) => (
                       <Link
-                        to={`/collections/${value}`}
+                        to={`/anime-browse/collections/${value}`}
                         style={{ textDecoration: "none" }}
                         key={`collection_link_${index}`}
                       >

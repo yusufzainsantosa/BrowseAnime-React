@@ -18,7 +18,7 @@ function Folder({
       style={{
         textDecoration: "none",
       }}
-      to={`/collections/${collection}`}
+      to={`/anime-browse/collections/${collection}`}
       key={`keys_${collection}`}
     >
       <div className="folder">

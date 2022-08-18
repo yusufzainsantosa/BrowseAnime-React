@@ -151,7 +151,7 @@ function CardAnime({
           style={{
             textDecoration: "none",
           }}
-          to={collectionHover ? "#" : `/anime/${id}`}
+          to={collectionHover ? "#" : `/anime-browse/anime/${id}`}
         >
           <CardMedia
             className="img-card"
