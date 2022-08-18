@@ -4,14 +4,13 @@ export interface CollectionData extends AnimeInfo {
   createdAt: number;
 }
 
+export interface CollectionByAnimeId {
+  id: number;
+  keys: string[];
+}
 export interface IStorageItem {
   key: string;
   value: CollectionData[] | null;
-}
-
-export interface CollectionByAnime {
-  key: string;
-  value: { id: number; keys: string[] }[];
 }
 
 export class StorageItem {
@@ -35,7 +34,7 @@ export class LocalStorageWorker {
       typeof window["localStorage"] != "undefined" &&
       window["localStorage"] != null;
     this.formatKey = "collections|||";
-    this.collectionKeyByAnime = "collectionByAnimeId"
+    this.collectionKeyByAnime = "collectionByAnimeId";
   }
 
   // add value to storage
@@ -48,6 +47,7 @@ export class LocalStorageWorker {
         if (item) {
           const itemParse = JSON.parse(item);
           itemParse.createdAt = currDate.getTime();
+          this.addCollectionById(key, itemParse.id);
           data.push(itemParse);
         }
 
@@ -59,8 +59,30 @@ export class LocalStorageWorker {
     });
   }
 
+  addCollectionById(key: string, id: number) {
+    if (this.localStorageSupported) {
+      const data = localStorage.getItem(this.collectionKeyByAnime);
+      const parse: CollectionByAnimeId[] = data ? JSON.parse(data) : [];
+      const findIndex = parse.findIndex(
+        (item: CollectionByAnimeId) => item.id === id
+      );
+
+      if (findIndex > -1) parse[findIndex].keys.push(key);
+      else {
+        const input = {
+          id,
+          keys: [key],
+        };
+        parse.push(input);
+      }
+
+      const stringifyData = JSON.stringify(parse);
+      localStorage.setItem(this.collectionKeyByAnime, stringifyData);
+    }
+  }
+
   // get one item by key from storage
-  get(key: string): any[] {
+  get(key: string) {
     const formatKey = `${this.formatKey}${key}`;
     if (this.localStorageSupported) {
       const item = localStorage.getItem(formatKey);
@@ -73,6 +95,18 @@ export class LocalStorageWorker {
     return [];
   }
 
+  // get one item by key from storage
+  getCollectionsById(): CollectionByAnimeId[] {
+    if (this.localStorageSupported) {
+      const collectionById = localStorage.getItem(this.collectionKeyByAnime);
+      const parseCollectionById = collectionById
+        ? JSON.parse(collectionById)
+        : [];
+      return parseCollectionById;
+    }
+    return [];
+  }
+  
   // get all values and keys from storage (all items)
   getAllItems(): Array<StorageItem> {
     const list = new Array<StorageItem>();
@@ -118,29 +152,58 @@ export class LocalStorageWorker {
     }
   }
 
-  // remove value from storage
+  // remove value and key from storage
   remove(key: string) {
     const formatKey = `${this.formatKey}${key}`;
     if (this.localStorageSupported) {
+      const data = localStorage.getItem(formatKey);
+      const parse = data ? JSON.parse(data) : [];
+      const collectionById = this.getCollectionsById();
+
+      parse.forEach((item: CollectionData) => {
+        const findIndex = collectionById.findIndex(
+          (value: CollectionByAnimeId) => item.id === value.id
+        );
+        let keyIndex: number | null;
+        keyIndex = null;
+        if (findIndex > -1)
+          keyIndex = collectionById[findIndex].keys.findIndex(
+            (value: string) => value === key
+          );
+        if (keyIndex !== null && keyIndex > -1)
+          collectionById[findIndex].keys.splice(keyIndex, 1);
+
+        const stringifyData = JSON.stringify(collectionById);
+        localStorage.setItem(this.collectionKeyByAnime, stringifyData);
+      });
+
       localStorage.removeItem(formatKey);
     }
   }
 
   // remove value from storage
   removeItem(keys: string[], item: string = "") {
-    keys.forEach((key) => {
-      const formatKey = `${this.formatKey}${key}`;
-      if (this.localStorageSupported) {
+    if (this.localStorageSupported) {
+      const parseItem = JSON.parse(item);
+      keys.forEach((key) => {
+        const formatKey = `${this.formatKey}${key}`;
         const data = this.get(key);
-        const parseItem = JSON.parse(item);
         const removeData = data.filter(
           (value: CollectionData) => value.id !== parseItem.id
         );
 
         const stringifyData = JSON.stringify(removeData);
         localStorage.setItem(formatKey, stringifyData);
-      }
-    });
+      });
+      const collectionById = this.getCollectionsById();
+      const findIndex = collectionById.findIndex(
+        (value: CollectionByAnimeId) => parseItem.id === value.id
+      );
+      if (findIndex > -1) collectionById.splice(findIndex, 1);
+
+      const stringifyCollById = JSON.stringify(collectionById);
+      localStorage.setItem(this.collectionKeyByAnime, stringifyCollById);
+    }
   }
 
   // clear storage (remove all items from it)
