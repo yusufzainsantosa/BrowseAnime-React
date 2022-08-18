@@ -10,6 +10,7 @@ export interface AnimeDetail {
   coverImage: {
     color: string;
     large: string;
+    medium: string;
   };
   bannerImage: optionalString;
   startDate: {
@@ -83,6 +84,15 @@ export interface AnimeStaff {
   node: Staff;
 }
 
+export interface CharacterPreview {
+  pageInfo: PageInfo;
+  edges: AnimeCharacters[];
+}
+export interface StaffPreview {
+  pageInfo: PageInfo;
+  edges: AnimeStaff[];
+}
+
 export interface AnimeInfo {
   id: number;
   title: {
@@ -95,6 +105,7 @@ export interface AnimeInfo {
   coverImage: {
     color: string;
     large: string;
+    medium: string;
   };
 }
 
