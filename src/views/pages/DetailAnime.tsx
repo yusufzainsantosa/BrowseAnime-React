@@ -1,12 +1,16 @@
 import styled from "@emotion/styled";
-import { useOutletContext, useParams } from "react-router-dom";
+import { Link, useOutletContext, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { Box, Tabs, Tab } from "@mui/material";
+import { Chip, Box, Tabs, Tab } from "@mui/material";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 
-import { CollectionData, LocalStorageWorker } from "../../services/Storage";
+import {
+  CollectionByAnimeId,
+  CollectionData,
+  LocalStorageWorker,
+} from "../../services/Storage";
 import { GET_ANIME_OVERVIEW } from "../../services/Query";
 import {
   AnimeCharacters,
@@ -89,6 +93,19 @@ const MediaContent = styled.div({
   flexGrow: 1,
   padding: "0 50px 0 0",
   color: "white",
+  "& > .anime-collections": {
+    display: "flex",
+    flexWrap: "wrap",
+    marginBottom: "10px",
+    "& > a": {
+      "& div": {
+        cursor: "pointer",
+      },
+      "&:hover": {
+        filter: "drop-shadow(2px 4px 6px gray)",
+      },
+    },
+  },
   "& > .anime-title": {
     display: "flex",
     alignItems: "center",
@@ -143,6 +160,7 @@ function DetailAnime() {
   const [animeCollected, updateAnimeCollected] = useState<CollectionData[]>();
   const [animeCharacters, updateAnimeCharacters] = useState<CharacterPreview>();
   const [animeStaff, updateAnimeStaff] = useState<StaffPreview>();
+  const [collByAnimeId, UpdateCollByAnimeId] = useState<CollectionByAnimeId>();
   const [tabValue, updateTabValue] = useState<number>(0);
 
   const { loading, data, error, refetch }: Response = useQuery(
@@ -153,8 +171,18 @@ function DetailAnime() {
     }
   );
 
-  const getAllCollectionsValues = (): void =>
+  const getAllCollectionsValues = (): void => {
+    const collectionsById: CollectionByAnimeId[] = storage.getCollectionsById();
+    let findIndex = -1;
+    if (animeDetail)
+      findIndex = collectionsById.findIndex(
+        (item) => item.id === animeDetail.id
+      );
+    if (findIndex > -1) {
+      UpdateCollByAnimeId(collectionsById[findIndex]);
+    }
     updateAnimeCollected(storage.getAllValues());
+  };
   const whenModalClosed = (state: boolean): void => {
     getAllCollectionsValues();
     updateModalOpen(state);
@@ -256,6 +284,10 @@ function DetailAnime() {
     if (!loading && error) updateErrorState(true);
     // eslint-disable-next-line
   }, [loading, data, error]);
+  useEffect(() => {
+    getAllCollectionsValues();
+    // eslint-disable-next-line
+  }, [animeDetail]);
 
   return (
     <div>
@@ -291,6 +323,30 @@ function DetailAnime() {
                 <h2>&nbsp;|&nbsp;</h2>
                 <p>{animeDetail.title.userPreferred}</p>
               </div>
+              <div className="anime-collections">
+                {collByAnimeId && collByAnimeId.keys
+                  ? collByAnimeId.keys.map((value, index) => (
+                      <Link
+                        to={`/collections/${value}`}
+                        style={{ textDecoration: "none" }}
+                        key={`collection_link_${index}`}
+                      >
+                        <Chip
+                          key={`collection_${index}`}
+                          label={value}
+                          sx={{
+                            color: "white",
+                            margin: "0 5px 5px 0",
+                            height: "25px",
+                            backgroundColor: animeDetail.coverImage.color
+                              ? animeDetail.coverImage.color
+                              : "gray",
+                          }}
+                        />
+                      </Link>
+                    ))
+                  : ""}
+              </div>
               <div
                 dangerouslySetInnerHTML={convert2Html(animeDetail.description)}
               />
@@ -314,7 +370,11 @@ function DetailAnime() {
                       <div key={`overview-${index}`}>
                         <p>{convertCamel2Title(keyValue)}</p>
                         <OverlayEl key={`overview-data-${index}`}>
-                          {OverviewFormat(keyValue, value)}
+                          {value ? (
+                            OverviewFormat(keyValue, value)
+                          ) : (
+                            <span>-</span>
+                          )}
                         </OverlayEl>
                       </div>
                     ) : (
