@@ -1,5 +1,5 @@
-import { Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 
 import Loading from "./views/components/Loading";
@@ -15,8 +15,14 @@ const MainContainer = styled.div({
 });
 
 function App() {
+  const location = useLocation();
   const [loadingState, updateLoadingState] = useState<boolean>(false);
   const [errorState, updateErrorState] = useState<boolean>(false);
+
+  useEffect(() => {
+    updateErrorState(false)
+    updateErrorState(false)
+  }, [location]);
 
   return (
     <div className="App">
