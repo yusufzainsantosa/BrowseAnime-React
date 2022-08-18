@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import useBreakpoint from "use-breakpoint";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
@@ -82,7 +83,10 @@ const TrashIcon = {
   },
 };
 
+const breakpoints = { mobile: 0, nonMobile: 900 };
+
 function Collections() {
+  const { breakpoint } = useBreakpoint(breakpoints, "mobile", false);
   const storage = new LocalStorageWorker();
   const [deleteNotif, updateDeleteNotif] = useState<{
     active: boolean;
@@ -142,7 +146,10 @@ function Collections() {
                     className="trash-icon"
                     key={`delete_${index}`}
                     onClick={() => confirmDeleteCollection(item.key)}
-                    sx={TrashIcon}
+                    sx={{
+                      ...TrashIcon,
+                      display: breakpoint === "mobile" ? "block" : "none",
+                    }}
                   />
                   <Collection key={`collection_${index}`}>
                     <Folder
