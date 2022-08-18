@@ -24,7 +24,7 @@ function Staff({
       {staff
         ? staff.map((data, index) => (
             <MediaDetailSection key={`staf_${index}`}>
-              <div>
+              <div className="img-container">
                 <img
                   className="media-detail-img"
                   src={data.node.image.medium}
