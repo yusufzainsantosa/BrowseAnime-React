@@ -27,6 +27,7 @@ export const GET_ANIME_LIST = gql`
         coverImage {
           color
           large
+          medium
         }
       }
     }
@@ -50,6 +51,7 @@ export const GET_ANIME_OVERVIEW = gql`
       coverImage {
         color
         large
+        medium
       }
       bannerImage
       startDate {
