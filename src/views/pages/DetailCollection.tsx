@@ -1,3 +1,4 @@
+import React from "react";
 import styled from "@emotion/styled";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -5,6 +6,8 @@ import { Box, Grid, Pagination, Stack } from "@mui/material";
 
 import { PageInfo } from "../../interfaces/Type";
 import { CollectionData, LocalStorageWorker } from "../../services/Storage";
+import { AnimeInfo } from "../../interfaces/Type";
+import RemoveAnimeColl from "../components/RemoveAnimeColl";
 import CardAnime from "../components/CardAnime";
 
 type UrlParams = {
@@ -55,8 +58,10 @@ const GridStyle = {
 function DefaultCollection() {
   const params = useParams<UrlParams>();
   const storage = new LocalStorageWorker();
+  const [deleteOpen, updateDeleteOpen] = useState<boolean>(false);
   const [animeList, updateAnimeList] = useState<CollectionData[]>();
   const [animeByPage, updateAnimeByPage] = useState<CollectionData[]>();
+  const [animeSelect, updateAnimeSelect] = useState<AnimeInfo>();
   const [pageDetail, updatePageDetail] = useState<PageInfo>({
     total: 1,
     perPage: 10,
@@ -78,6 +83,16 @@ function DefaultCollection() {
         hasNextPage: totalPage > 1 ? true : false,
       }));
     }
+  };  
+  const animeRemovedStatus = (state: boolean): void => {
+    if (state) {
+      getAllCollections();
+    }
+    updateDeleteOpen(false);
+  };  
+  const whenModalOpen = (state: boolean, data: AnimeInfo): void => {
+    if (!state) updateDeleteOpen(true);
+    updateAnimeSelect(data);
   };
   const changePage = (event: React.ChangeEvent<unknown>, page: number) => {
     if (animeList)
@@ -118,9 +133,7 @@ function DefaultCollection() {
                     <CardAnime
                       animeData={media}
                       isCollected={true}
-                      collectionClick={(state, data) => {
-                        return;
-                      }}
+                      collectionClick={whenModalOpen}
                     />
                   </Grid>
                 ))
@@ -128,6 +141,17 @@ function DefaultCollection() {
           </Grid>
         </Box>
       </MediaContainer>
+      {animeSelect ? (
+        <React.Fragment>
+          <RemoveAnimeColl
+            data={animeSelect}
+            state={deleteOpen}
+            deleteState={(state) => animeRemovedStatus(state)}
+          />
+        </React.Fragment>
+      ) : (
+        ""
+      )}
       <PaginationEl>
         <Stack spacing={2}>
           <Pagination
