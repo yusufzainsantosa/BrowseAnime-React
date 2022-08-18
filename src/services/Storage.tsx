@@ -106,7 +106,7 @@ export class LocalStorageWorker {
     }
     return [];
   }
-  
+
   // get all values and keys from storage (all items)
   getAllItems(): Array<StorageItem> {
     const list = new Array<StorageItem>();
@@ -164,14 +164,12 @@ export class LocalStorageWorker {
         const findIndex = collectionById.findIndex(
           (value: CollectionByAnimeId) => item.id === value.id
         );
-        let keyIndex: number | null;
-        keyIndex = null;
+        let keyIndex = -1;
         if (findIndex > -1)
           keyIndex = collectionById[findIndex].keys.findIndex(
             (value: string) => value === key
           );
-        if (keyIndex !== null && keyIndex > -1)
-          collectionById[findIndex].keys.splice(keyIndex, 1);
+        if (keyIndex > -1) collectionById[findIndex].keys.splice(keyIndex, 1);
 
         const stringifyData = JSON.stringify(collectionById);
         localStorage.setItem(this.collectionKeyByAnime, stringifyData);
