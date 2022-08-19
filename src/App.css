@@ -1,5 +1,6 @@
 .App {
   min-height: 100vh;
+  min-width: 320px;
   background: linear-gradient(
     112.1deg,
     rgb(32, 38, 57) 11.4%,
