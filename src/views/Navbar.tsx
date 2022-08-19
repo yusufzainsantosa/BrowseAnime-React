@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 
 const Nav = styled.nav({
   width: "100%",
+  minWidth: "320px",
   background:
     "linear-gradient(109.6deg, rgb(20 30 48 / 97%) 11.2%, rgb(36 59 85 / 89%) 91.1%)",
   zIndex: 9,
