@@ -59,6 +59,7 @@ const CardAnimeEl = {
   width: "100%",
   maxWidth: "250px",
   height: "100%",
+  minHeight: "250px",
   maxHeight: "300px",
   filter: "brightness(90%)",
 };
